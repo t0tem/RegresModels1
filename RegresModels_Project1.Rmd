@@ -1,5 +1,6 @@
 ---
-title: "Exploring influence of transmission type on fuel economy in Mtcars dataset"
+title: Exploring relationship between transmission type and fuel consumption in mtcars
+  dataset
 author: "Vadim K."
 date: '2017-02-06'
 output:
@@ -13,4 +14,93 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ##Executive summary
+In this research we study the data of Motor Trend, a magazine about the automobile industry. The dataset is originated from 1974 and comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973–74 models).
+
+We particularly focused on following two questions:  
+- "Is an automatic or manual transmission better for MPG"  
+- "Quantify the MPG difference between automatic and manual transmissions"  
+
+To answer these questions we first did some exploratory analysis of the data, followed by hypothesis testing and fitting linear regressions. The conclusion we arrived to is that manual transmission is statistically significantly better for MPG than automatic one, the difference is 2.08 increase in MPG.
+
+##Loading and processing data 
+First we load the necessary packages and the data
+```{r warning=FALSE, message=FALSE}
+require(datasets); require(ggplot2); require(GGally); data(mtcars)
+```
+
+Checking the names of variables:
+```{r}
+names(mtcars)
+```
+
+We transform variable `am` to a factor to be better treated by our models
+```{r}
+mtcars$am <- factor(mtcars$am, labels = c("automatic", "manual"))
+```
+
+##Exploratory analysis
+
+First we plot the distribution of MPG in order to make sure it's approximately normal (see Figure 1 in Appendix).  
+The general difference in MPG between automatic and manual transmission is observed on the corresponding box and whiskers plot (see Figure 2 in Appendix)
+
+###Hypothesis test
+We test the hypotesis that the mean MPG are different between two types of transmission
+```{r}
+t.test(mtcars[mtcars$am == "manual", "mpg"], mtcars[mtcars$am == "automatic", "mpg"])
+```
+_p-value is <0.05 and confidence interval doesn't contain zero which means that the difference in means is statistically significant._
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\pagebreak
+
+## Appendix
+
+####_Figure 1_
+```{r, echo = FALSE, fig.width=5, fig.height=3.5}
+
+g1 <- ggplot(mtcars, aes(x = mpg)) + 
+      geom_histogram(binwidth = 4, color = "white", fill = "steelblue1", aes(y = ..density..)) +
+      labs(list(title = "MPG Distribution", 
+                x = element_blank(),
+                y = element_blank())) +
+      geom_density(size = 2, aes(color = "1")) + 
+      stat_function(fun = dnorm, args = list(mean = mean(mtcars$mpg), 
+                                             sd = sd(mtcars$mpg)), 
+                    size = 2, aes(color = "2")) + 
+      scale_color_manual(values = c("blue4", "red"),
+                         labels = c("MPG Density",
+                                    "Normal Distribution"),
+                         name = "") 
+print(g1)
+```
+
+####_Figure 2_
+```{r, echo = FALSE, fig.width=5, fig.height=3.5}
+
+g2 <- ggplot(mtcars, aes(x = am, y = mpg, group = am)) + geom_boxplot() +
+      labs(list(title = "MPG per transmission type", 
+                x = "",
+                y = "Miles/(US) gallon"))
+print(g2)
+```
+
+
+
 
