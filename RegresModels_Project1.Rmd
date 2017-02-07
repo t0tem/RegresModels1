@@ -20,7 +20,7 @@ We particularly focused on following two questions:
 - "Is an automatic or manual transmission better for MPG"  
 - "Quantify the MPG difference between automatic and manual transmissions"  
 
-To answer these questions we first did some exploratory analysis of the data, followed by hypothesis testing and fitting linear regressions. The conclusion we arrived to is that manual transmission is statistically significantly better for MPG than automatic one, the difference is 2.08 increase in MPG.
+To answer these questions we first did some exploratory analysis of the data, followed by hypothesis testing and fitting linear regressions. The conclusion we arrived to is that manual transmission is statistically significantly better for MPG than automatic one, the difference is 2.9 increase in MPG.
 
 ##Loading and processing data 
 First we load the necessary packages and the data
@@ -43,12 +43,48 @@ mtcars$am <- factor(mtcars$am, labels = c("automatic", "manual"))
 First we plot the distribution of MPG in order to make sure it's approximately normal (see Figure 1 in Appendix).  
 The general difference in MPG between automatic and manual transmission is observed on the corresponding box and whiskers plot (see Figure 2 in Appendix)
 
-###Hypothesis test
+###Hypothesis test and inference
 We test the hypotesis that the mean MPG are different between two types of transmission
 ```{r}
 t.test(mtcars[mtcars$am == "manual", "mpg"], mtcars[mtcars$am == "automatic", "mpg"])
 ```
 _p-value is <0.05 and confidence interval doesn't contain zero which means that the difference in means is statistically significant._
+
+##Model selection and diagnostic
+We first fit a linear model between the `mpg` and our variable of interest `am`
+```{r}
+fit1 <- lm(mpg ~ am, data = mtcars); summary(fit1)$coef; summary(fit1)$adj.r.squared
+```
+_p-value of 'ammanual' coefficient is very low (0.00028) and the coefficient itself is equal 7.245 - that means according to our model there is a 7.245 MPG increase betweem automatic and manual transmission. In the meantime adjusted R-squared is only 0.3385 meaning our model explains only 33.85% of variation_  
+In order to find a better model we'll take a look at pairwise plots and correlations between variables (see Figure 3 in Appendix).  
+we can see that there is a correlation between MPG and following variables:
+wt, hp, disp, cyl. So we will fit several multivariable linear regressions and compare then using `anova` function.
+```{r}
+fit2 <- lm(mpg ~ am + wt, mtcars); fit3 <- lm(mpg ~ am + wt + hp, mtcars);
+fit4 <- lm(mpg ~ am + wt + hp + disp, mtcars); fit5 <- lm(mpg ~ am + wt + hp + disp + cyl, mtcars);
+anova(fit1, fit2, fit3, fit4, fit5)
+```
+_According to p-value from anova we choose Model 3 -  adding more variables gives p-value >0.05_  
+After checking adjusted R-squared of Model 3
+```{r}
+summary(fit3)$adj.r.squared
+```
+We discover that it explains 82.27% of variation. Good but probably not the best possible.  
+Another attempt we do with `step` function which runs a stepwise algorithm to choose a model according Akaike information criterion (AIC).
+```{r}
+fit6 <- step(lm(mpg ~ ., data = mtcars), trace = FALSE); fit6$call; summary(fit6)$adj.r.squared
+```
+As R-squard of this model is higher and equal 0.8335 and we choose this model to proceed.  
+
+For the chosen model we built the diagnostic plots (see Figure 4 in Appendix) and took a look particularly at residuals plot - no visual pattern has been detected, which speaks for model reliability.  
+So the summary of final model is
+```{r}
+summary(fit6)
+```
+##Conslusion
+Thus according to results given by our model 
+
+
 
 
 
@@ -94,13 +130,52 @@ print(g1)
 ####_Figure 2_
 ```{r, echo = FALSE, fig.width=5, fig.height=3.5}
 
-g2 <- ggplot(mtcars, aes(x = am, y = mpg, group = am)) + geom_boxplot() +
+g2 <- ggplot(mtcars, aes(x = factor(am, labels = c("automatic", "manual")),
+                         y = mpg, 
+                         group = factor(am, labels = c("automatic", "manual")))) + 
+      geom_boxplot() +
       labs(list(title = "MPG per transmission type", 
                 x = "",
                 y = "Miles/(US) gallon"))
 print(g2)
 ```
 
+####_Figure 3_
+```{r echo = FALSE, warning=FALSE, message=FALSE}
+#, fig.width=7, fig.height=6
 
+## put histograms on the diagonal (from ?pairs)
+panel.hist <- function(x, ...)
+{
+    usr <- par("usr"); on.exit(par(usr))
+    par(usr = c(usr[1:2], 0, 1.5) )
+    h <- hist(x, plot = FALSE)
+    breaks <- h$breaks; nB <- length(breaks)
+    y <- h$counts; y <- y/max(y)
+    rect(breaks[-nB], 0, breaks[-1], y, col = "steelblue1", ...)
+}
+
+## put (absolute) correlations on the upper panels,
+## with size proportional to the correlations. (from ?pairs)
+panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...)
+{
+    usr <- par("usr"); on.exit(par(usr))
+    par(usr = c(0, 1, 0, 1))
+    r <- abs(cor(x, y))
+    txt <- format(c(r, 0.123456789), digits = digits)[1]
+    txt <- paste0(prefix, txt)
+    if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
+    text(0.5, 0.5, txt, cex = cex.cor * r)
+}
+
+pairs(mtcars, pch = 19, upper.panel = panel.cor, diag.panel = panel.hist, 
+      main = "mtcars pairs plot")
+```
+
+####_Figure 4_
+```{r echo = FALSE, warning=FALSE, message=FALSE, fig.width=5, fig.height=5}
+par(mfrow=c(2,2))
+plot(fit6)
+```
 
 
