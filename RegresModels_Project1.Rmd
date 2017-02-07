@@ -25,7 +25,7 @@ To answer these questions we first did some exploratory analysis of the data, fo
 ##Loading and processing data 
 First we load the necessary packages and the data
 ```{r warning=FALSE, message=FALSE}
-require(datasets); require(ggplot2); require(GGally); data(mtcars)
+require(datasets); require(ggplot2); data(mtcars)
 ```
 
 Checking the names of variables:
@@ -55,16 +55,16 @@ We first fit a linear model between the `mpg` and our variable of interest `am`
 ```{r}
 fit1 <- lm(mpg ~ am, data = mtcars); summary(fit1)$coef; summary(fit1)$adj.r.squared
 ```
-_p-value of 'ammanual' coefficient is very low (0.00028) and the coefficient itself is equal 7.245 - that means according to our model there is a 7.245 MPG increase betweem automatic and manual transmission. In the meantime adjusted R-squared is only 0.3385 meaning our model explains only 33.85% of variation_  
-In order to find a better model we'll take a look at pairwise plots and correlations between variables (see Figure 3 in Appendix).  
-we can see that there is a correlation between MPG and following variables:
-wt, hp, disp, cyl. So we will fit several multivariable linear regressions and compare then using `anova` function.
+_p-value of 'ammanual' coefficient is very low (0.00028) and the coefficient itself is equal 7.245 - that means according to the model there is a 7.245 MPG increase between automatic and manual transmission. In the meantime adjusted R-squared is only 0.3385 meaning our model explains only 33.85% of variation_  
+
+In order to find a better model we'll take a look at pairwise plots and correlations between variables (see Figure 3 in Appendix). We can see that there is a correlation between MPG and following variables:
+wt, hp, disp, cyl. So we will fit several multivariable linear regressions and compare them using `anova` function.
 ```{r}
 fit2 <- lm(mpg ~ am + wt, mtcars); fit3 <- lm(mpg ~ am + wt + hp, mtcars);
 fit4 <- lm(mpg ~ am + wt + hp + disp, mtcars); fit5 <- lm(mpg ~ am + wt + hp + disp + cyl, mtcars);
 anova(fit1, fit2, fit3, fit4, fit5)
 ```
-_According to p-value from anova we choose Model 3 -  adding more variables gives p-value >0.05_  
+_According to p-value from anova we choose Model 3, adding more variables gives p-value >0.05_  
 After checking adjusted R-squared of Model 3
 ```{r}
 summary(fit3)$adj.r.squared
@@ -82,27 +82,7 @@ So the summary of final model is
 summary(fit6)
 ```
 ##Conslusion
-Thus according to results given by our model 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Thus according to the model MPG is best described through the variables wt + qsec + am, this model explains 83.35% of variance in dataset. P-values confirm statistical significance of all variables, and according to `am` coefficient the final answer is **manual transmission is better for MPG, it gives an average increase of 2.9 miles per gallon comparing to automatic one.**
 
 \pagebreak
 
@@ -168,13 +148,13 @@ panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...)
     text(0.5, 0.5, txt, cex = cex.cor * r)
 }
 
-pairs(mtcars, pch = 19, upper.panel = panel.cor, diag.panel = panel.hist, 
-      main = "mtcars pairs plot")
+par(mar = c(1,2,1,2))
+pairs(mtcars, pch = 19, upper.panel = panel.cor, diag.panel = panel.hist)
 ```
 
 ####_Figure 4_
-```{r echo = FALSE, warning=FALSE, message=FALSE, fig.width=5, fig.height=5}
-par(mfrow=c(2,2))
+```{r echo = FALSE, warning=FALSE, message=FALSE, fig.width=5, fig.height=3.5}
+par(mfrow=c(2,2), mar = c(4,4,2,2))
 plot(fit6)
 ```
 

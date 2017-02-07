@@ -11,13 +11,13 @@ We particularly focused on following two questions:
 - "Is an automatic or manual transmission better for MPG"  
 - "Quantify the MPG difference between automatic and manual transmissions"  
 
-To answer these questions we first did some exploratory analysis of the data, followed by hypothesis testing and fitting linear regressions. The conclusion we arrived to is that manual transmission is statistically significantly better for MPG than automatic one, the difference is 2.08 increase in MPG.
+To answer these questions we first did some exploratory analysis of the data, followed by hypothesis testing and fitting linear regressions. The conclusion we arrived to is that manual transmission is statistically significantly better for MPG than automatic one, the difference is 2.9 increase in MPG.
 
 ##Loading and processing data 
 First we load the necessary packages and the data
 
 ```r
-require(datasets); require(ggplot2); require(GGally); data(mtcars)
+require(datasets); require(ggplot2); data(mtcars)
 ```
 
 Checking the names of variables:
@@ -80,10 +80,10 @@ fit1 <- lm(mpg ~ am, data = mtcars); summary(fit1)$coef; summary(fit1)$adj.r.squ
 ```
 ## [1] 0.3384589
 ```
-_p-value of 'ammanual' coefficient is very low (0.00028) and the coefficient itself is equal 7.245 - that means according to our model there is a 7.245 MPG increase betweem automatic and manual transmission. In the meantime adjusted R-squared is only 0.3385 meaning our model explains only 33.85% of variation_  
-In order to find a better model we'll take a look at pairwise plots and correlations between variables (see Figure 3 in Appendix).  
-we can see that there is a correlation between MPG and following variables:
-wt, hp, disp, cyl. So we will fit several multivariable linear regressions and compare then using `anova` function.
+_p-value of 'ammanual' coefficient is very low (0.00028) and the coefficient itself is equal 7.245 - that means according to the model there is a 7.245 MPG increase between automatic and manual transmission. In the meantime adjusted R-squared is only 0.3385 meaning our model explains only 33.85% of variation_  
+
+In order to find a better model we'll take a look at pairwise plots and correlations between variables (see Figure 3 in Appendix). We can see that there is a correlation between MPG and following variables:
+wt, hp, disp, cyl. So we will fit several multivariable linear regressions and compare them using `anova` function.
 
 ```r
 fit2 <- lm(mpg ~ am + wt, mtcars); fit3 <- lm(mpg ~ am + wt + hp, mtcars);
@@ -108,7 +108,7 @@ anova(fit1, fit2, fit3, fit4, fit5)
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
-_According to p-value from anova we choose Model 3 -  adding more variables gives p-value >0.05_  
+_According to p-value from anova we choose Model 3, adding more variables gives p-value >0.05_  
 After checking adjusted R-squared of Model 3
 
 ```r
@@ -164,27 +164,7 @@ summary(fit6)
 ## F-statistic: 52.75 on 3 and 28 DF,  p-value: 1.21e-11
 ```
 ##Conslusion
-Thus 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Thus according to the model MPG is best described through the variables wt + qsec + am, this model explains 83.35% of variance in dataset. P-values confirm statistical significance of all variables, and according to `am` coefficient the final answer is **manual transmission is better for MPG, it gives an average increase of 2.9 miles per gallon comparing to automatic one.**
 
 \pagebreak
 
@@ -200,6 +180,6 @@ Thus
 ![](RegresModels_Project1_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
 
 ####_Figure 4_
-![Final model diagnostic plots](RegresModels_Project1_files/figure-html/unnamed-chunk-13-1.png)
+![](RegresModels_Project1_files/figure-html/unnamed-chunk-13-1.png)<!-- -->
 
 
